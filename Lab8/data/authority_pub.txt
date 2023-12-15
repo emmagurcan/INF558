@@ -1,0 +1,3 @@
+#RSA Public key (256 bits):
+N = 0xc08dab3922e53b9cedeb32d65094462ced63cc2b6d71e8b4fd08f2f93b0c9281
+e = 0xc84b83bf8c216c93b9c461027ecfae2d90a4be3d990064cb38ad50c845c70af

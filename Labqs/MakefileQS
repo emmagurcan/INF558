@@ -1,0 +1,25 @@
+LIBPATH = ..
+include $(LIBPATH)/Lib/Makefile.common 
+
+all: test_QS
+
+clean:
+	rm -f *.o test_QS
+
+######################################################################
+
+utils.o: utils.c utils.h
+	$(CC) $(CFLAGS) -c utils.c
+
+hash.o: hash.c hash.h
+	$(CC) $(CFLAGS) -c hash.c
+
+QS.o: QS.c QS.h
+	$(CC) $(CFLAGS) -c QS.c
+
+test_QS.o: test_QS.c
+	$(CC) $(CFLAGS) -c test_QS.c
+
+test_QS: utils.o hash.o QS.o test_QS.o
+	$(CC) $(LDFLAGS) test_QS.o QS.o utils.o hash.o $(LIBS) -o test_QS
+

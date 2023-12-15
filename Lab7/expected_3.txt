@@ -1,0 +1,5 @@
+------------------ Test 3 -----------------
+
+Checking signature algorithm ......... [OK]
+Checking verification algorithm ...... [OK]
+

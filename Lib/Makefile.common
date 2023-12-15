@@ -1,0 +1,30 @@
+CC = gcc
+
+## BEGIN_PAS_DONNER
+LIBPATH ?= ../..
+## END_PAS_DONNER
+#LIBPATH ?= ..
+
+LIBDIR = $(LIBPATH)/Lib
+
+TOOLSDIR = $(LIBDIR)/Tools
+INCPATH = -I$(TOOLSDIR)
+TOOLSLIB = $(TOOLSDIR)/inf558_tools.a
+
+CRYPTODIR = $(LIBDIR)/Crypto
+INCPATH2 = -I$(CRYPTODIR)
+CRYPTOLIB = $(CRYPTODIR)/inf558_crypto.a
+
+GMPINC =
+GMP_LIB = -lgmp
+########## for a personal installation, uncomment these lines and fill them
+# GMP_DIR = $(HOME)/Bignums/GMP/portablefm
+# GMP_INC = -I $(GMP_DIR)/include
+# GMP_LIB = $(GMP_DIR)/lib/libgmp.a
+##########
+
+FLAGS = -std=c99 -Wall -Wwrite-strings -g
+IPATH = $(INCPATH) $(INCPATH2) $(GMP_INC)
+CFLAGS = $(FLAGS) $(IPATH)
+LDFLAGS = $(FLAGS)
+LIBS = $(GMP_LIB) $(CRYPTOLIB) $(TOOLSLIB) -lm

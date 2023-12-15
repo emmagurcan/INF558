@@ -1,0 +1,25 @@
+LIBPATH = ..
+include $(LIBPATH)/Lib/Makefile.common
+
+all: key_gen
+
+clean:
+	rm -f *.o key_gen
+
+cleanall:
+	rm -f *_sec.txt *_pub.txt *_certificate.txt
+
+######################################################################
+
+
+rsa.o: rsa.c rsa.h
+	$(CC) $(CFLAGS) -c rsa.c -o ./rsa.o
+
+sign.o: sign.c sign.h
+	$(CC) $(CFLAGS) -c sign.c -o ./sign.o
+
+OBJS = sign.o rsa.o
+key_gen: key_gen.c $(OBJS)
+	$(CC) $(CFLAGS) key_gen.c $(OBJS) $(LIBS) -o ./key_gen
+
+

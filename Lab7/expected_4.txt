@@ -1,0 +1,30 @@
+------------------ Test 4 -----------------
+
+Message : 
+
+1. Heat oven to 200C/fan 180C/gas 6.
+Score the skin of the duck breasts and season.
+Heat a non-stick frying pan over a high heat, add the duck, skin-side down,
+and cook for 4 mins or until the skin is crisp.
+Turn over and quickly brown the underside, then transfer to a baking tray.
+
+2. Mix the dressing ingredients together and spoon all but 2 tbsp of it over the duck.
+Roast the duck for 10 mins for pink, longer if you prefer.
+Remove from the oven and allow to rest for 4 mins, then slice into strips.
+
+3. Toss together the salad, tomatoes, spring onions and duck slices.
+Drizzle over the remaining dressing and serve.
+-------------------------------------------------
+
+
+-----------------------------------------------
+
+#RSA signature
+S = 0x1778a32babfcd76afbf3dec0bfd1625c550b98789b3a872dcaac648e18c9ac97
+
+-----------------------------------------------
+
+Signature verification...
+
+[OK]
+

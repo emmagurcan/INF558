@@ -1,0 +1,19 @@
+------------------ Test 10 -----------------
+
+Test solving system...
+Linear system : 
+0 k - 3 x = 7
+8 k - 6 x = 2
+
+Candidate for secret key obtained from the attack:
+x = 5
+
+Linear system : 
+1 k - 3 x = 7
+3 k - 1 x = 2
+
+Candidate for secret key obtained from the attack:
+x = 10
+
+[OK]
+

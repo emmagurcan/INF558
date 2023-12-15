@@ -1,0 +1,32 @@
+LIBPATH = ..
+include $(LIBPATH)/Lib/Makefile.common 
+
+all: test_factor
+
+clean:
+	rm -f *.o test_factor
+
+######################################################################
+
+OBJS = hash.o utils.o trialdiv.o rho.o pminus1.o
+
+utils.o: utils.c utils.h
+	$(CC) $(CFLAGS) -c utils.c
+
+trialdiv.o: trialdiv.c trialdiv.h
+	$(CC) $(CFLAGS) -c trialdiv.c
+
+rho.o: rho.c rho.h
+	$(CC) $(CFLAGS) -c rho.c
+
+pminus1.o: pminus1.c pminus1.h
+	$(CC) $(CFLAGS) -c pminus1.c
+
+hash.o: hash.c hash.h
+	$(CC) $(CFLAGS) -c hash.c
+	
+test_factor.o: test_factor.c
+	$(CC) $(CFLAGS) -c test_factor.c
+
+test_factor: $(OBJS) test_factor.o
+	$(CC) $(LDFLAGS) test_factor.o $(OBJS) $(LIBS) -o test_factor
