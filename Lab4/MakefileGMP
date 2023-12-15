@@ -1,0 +1,43 @@
+LIBPATH = ..
+include $(LIBPATH)/Lib/Makefile.common 
+
+PRGMS=checkgmp fermat test_xgcd test_rsa test_CRT
+all: $(PRGMS) 
+
+OBJS=xgcd.o CRT.o rsa.o
+clean:
+	rm $(OBJS) $(PRGMS)
+
+######################################################################
+checkgmp: checkgmp.c
+	$(CC) $(LDFLAGS) checkgmp.c $(LIBS) -o ./checkgmp
+
+fermat: fermat.c
+	$(CC) $(LDFLAGS) fermat.c $(LIBS) -o ./fermat
+
+xgcd.o: xgcd.c xgcd.h
+	$(CC) $(CFLAGS) -c xgcd.c -o ./xgcd.o
+
+test_xgcd.o: test_xgcd.c
+	$(CC) $(CFLAGS) -c test_xgcd.c -o ./test_xgcd.o
+
+test_xgcd: test_xgcd.o xgcd.o
+	$(CC) $(LDFLAGS) test_xgcd.o xgcd.o $(LIBS) -o ./test_xgcd
+
+CRT.o: CRT.c CRT.h
+	$(CC) $(CFLAGS) -c CRT.c -o ./CRT.o
+
+test_CRT.o: test_CRT.c
+	$(CC) $(CFLAGS) -c test_CRT.c -o ./test_CRT.o
+
+test_CRT: test_CRT.o CRT.o xgcd.o
+	$(CC) $(LDFLAGS) test_CRT.o CRT.o xgcd.o $(LIBS) -o ./test_CRT
+
+rsa.o: rsa.c rsa.h
+	$(CC) $(CFLAGS) -c rsa.c -o ./rsa.o
+
+test_rsa.o: test_rsa.c
+	$(CC) $(CFLAGS) -c test_rsa.c -o ./test_rsa.o
+
+test_rsa: test_rsa.o rsa.o CRT.o xgcd.o
+	$(CC) $(LDFLAGS) test_rsa.o rsa.o CRT.o xgcd.o $(LIBS) -o ./test_rsa

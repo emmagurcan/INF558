@@ -1,0 +1,35 @@
+CC = gcc
+
+LIBDIR = ../Lib_light
+
+
+INCPATH = -I$(LIBDIR)
+LIB =  $(LIBDIR)/inf558.a
+
+CFLAGS = -Wall -Wwrite-strings -g $(INCPATH)
+LDFLAGS = -Wall -Wwrite-strings -g
+
+all: testEx4
+
+OBJS = bits.o LFSR.o Geffe.o testEx4.o
+clean:
+	@rm -f $(OBJS) testEx4
+
+######################################################################
+bits.o: bits.c bits.h
+	$(CC) $(CFLAGS) -c bits.c
+
+LFSR.o: LFSR.c LFSR.h
+	$(CC) $(CFLAGS) -c LFSR.c
+
+Geffe.o: Geffe.c Geffe.h
+	$(CC) $(CFLAGS) -c Geffe.c
+
+testEx4.o: testEx4.c
+	$(CC) $(CFLAGS) -c testEx4.c
+
+testEx4: $(OBJS)
+	$(CC) $(LDFLAGS) $(OBJS) $(LIB) -o testEx4
+
+tests: all
+	for i in 1 2 3 4 5 6 7; do ./testEx4 $$i; done

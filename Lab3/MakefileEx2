@@ -1,0 +1,19 @@
+LIBPATH = ..
+include $(LIBPATH)/Lib/Makefile.common
+
+all: testEx2
+
+OBJS = diffusion.o testEx2.o
+clean:
+	rm -f $(OBJS) testEx2
+
+######################################################################
+diffusion.o : diffusion.c diffusion.h
+	$(CC) $(CFLAGS) -c diffusion.c
+
+testEx2.o: testEx2.c 
+	$(CC) $(CFLAGS) -c testEx2.c
+
+testEx2: $(OBJS) $(CRYPTOLIB) $(TOOLSLIB)
+	$(CC) $(LDFLAGS) $(OBJS) $(CRYPTOLIB) $(TOOLSLIB) -o testEx2
+

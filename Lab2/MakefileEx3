@@ -1,0 +1,30 @@
+CC = gcc
+
+LIBDIR = ../Lib_light
+
+INCPATH = -I$(LIBDIR)
+LIB =  $(LIBDIR)/inf558.a
+
+CFLAGS = -Wall -Wwrite-strings -g $(INCPATH)
+LDFLAGS = -Wall -Wwrite-strings -g
+
+all: testEx3
+
+OBJS = bits.o LFSR.o testEx3.o
+clean:
+	@rm -f $(OBJS) testEx3
+
+######################################################################
+
+bits.o: bits.c bits.h
+	$(CC) $(CFLAGS) -c bits.c
+
+LFSR.o: LFSR.c LFSR.h
+	$(CC) $(CFLAGS) -c LFSR.c
+
+testEx3.o: testEx3.c
+	$(CC) $(CFLAGS) -c testEx3.c
+
+testEx3: $(OBJS)
+	$(CC) $(LDFLAGS) $(OBJS) $(LIB) -o testEx3
+

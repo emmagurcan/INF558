@@ -1,0 +1,28 @@
+Problem:
+Suppose the ciphertext is composed of the following 16 byte blocks : 
+e0 e1 ... en (e0 is the initial value IV) and the corresponding plaintext is p1 ... pn.
+Let i be an integer, 0 < i <= n. Suppose then that we replace the block ei-1 in the 
+ciphertext by ei-1 ⊕ s for some 16 byte word s. Prove that the corresponding decrypted
+text will have pi ⊕ s as its i-th byte
+
+Proof:
+In Cipher Block Chaining (CBC), the encryption/decryption of the i+1th block is dependant
+on the ith block. So, to decrypt block ei, we use the ddecryption key from the plaintext
+block pi, and we XOR pi with the previous block ei-1 to get the original plaintext block.
+Now, if we replace ei -1 with ei -1 ⊕ s, we would decrypt ei to get pi and then xor pi with
+ei-1 ⊕ s to get the plaintext block. The ⊕ operation is commutative and associative,
+so we know that pi ⊕ (ei - 1 ⊕ s) = (pi ⊕ ei - 1) ⊕ s. So, the ith byte of the modified
+plaintext is pi ⊕ s. This property holds because the ⊕ operation cancels out the XORed value s
+from the i-th byte of the original plaintext.
+
+Problem:
+ Note that instead of Xoring with 1 you can Xor with any othe value. 
+Why is that? Explain this in funny.txt and upload it once more.
+
+Proof:
+XOR returns true if the number of true operands is odd. This means that 
+if there are 2 trues or 0 trues, XOR returns false and if there is 1 true,
+it returns true. This is how we toggle or flip the bit. In the context of trying to determine
+where the padding starts, we can use any other value than 1 for this purpose because 1 toggles
+the least significant bit but 2 would toggle the second least significatn bit. The chosen
+value doesn't really matter as long as we are targetting the position we want.

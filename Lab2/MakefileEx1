@@ -1,0 +1,33 @@
+.PHONY: all clean
+
+CC = gcc
+
+LIBDIR = ../Lib_light
+
+INCPATH = -I$(LIBDIR)
+LIB =  $(LIBDIR)/inf558.a
+
+CFLAGS = -Wall -Wwrite-strings -g $(INCPATH)
+LDFLAGS = -Wall -Wwrite-strings -g
+
+all: testEx1
+
+OBJS = bits.o testEx1.o
+clean:
+	@rm -f $(OBJS) testEx1
+
+
+######################################################################
+bits.o: bits.c bits.h
+	$(CC) $(CFLAGS) -c bits.c
+
+testEx1.o: testEx1.c
+	$(CC) $(CFLAGS) -c testEx1.c
+
+testEx1: $(OBJS)
+	$(CC) $(LDFLAGS) $(OBJS) $(LIB) -o testEx1
+
+tests: all
+	for i in 1 2 3 4 5 6; do ./testEx1 $$i; done
+
+	

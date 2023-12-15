@@ -1,0 +1,19 @@
+LIBPATH = ..
+include $(LIBPATH)/Lib/Makefile.common
+
+all: testEx3
+
+OBJS = attack_RFC2040.o testEx3.o
+clean:
+	rm -f $(OBJS) testEx3
+
+######################################################################
+attack_RFC2040.o: attack_RFC2040.c attack_RFC2040.h
+	$(CC) $(CFLAGS) -c attack_RFC2040.c
+	
+testEx3.o: testEx3.c
+	$(CC) $(CFLAGS) -c testEx3.c
+
+testEx3: $(OBJS) $(CRYPTOLIB) $(TOOLSLIB)
+	$(CC) $(LDFLAGS) $(OBJS) $(CRYPTOLIB) $(TOOLSLIB) -o testEx3
+
