@@ -51,7 +51,6 @@ void set_user_name(const char *ch){
     user_name = malloc(sizeof(char)*strlen(ch)+1);
     strcpy(user_name, ch);
 }
-
 void free_user_name(){
     free(user_name);
 }
@@ -117,7 +116,6 @@ void try_aes(){
 }
 
 int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
-    int done_after = 50;
     buffer_t clear, encrypted, key, IV, encrypted2;
     buffer_init(&clear, strlen((char*)msg));
     buffer_init(&encrypted, 1);
@@ -126,8 +124,8 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
     buffer_init(&IV, BLOCK_LENGTH);
 
     
-    printf("Sending: %s\n", msg);
-    network_send(host, port, client_host, client_port, msg);
+    printf("Sending: %s\n", "AES");
+    network_send(host, port, client_host, client_port, "AES");
 
     AES128_key_from_number(&key, gab);
     buffer_random(&IV, BLOCK_LENGTH);
@@ -142,10 +140,6 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
 
     network_send(host, port, client_host, client_port, (char *) encrypted_str);
 
-    // char *computed = network_recv(done_after);
-    // parse_packet(&client_host, &client_port, (char **)&msg, computed);
-    
-
     buffer_clear(&clear);
     buffer_clear(&encrypted);
     buffer_clear(&encrypted2);
@@ -157,7 +151,7 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
 }
 
 void try_send_aes(const char *host, const int port){
-    uchar *msg = (uchar*)"AES";
+    uchar *msg = (uchar*)"It's a long way to Tipperary";
     mpz_t gab;
 
     mpz_init_set_str(gab, "12345612345678907890", 10);
@@ -174,8 +168,102 @@ void prepare_cipher(buffer_t *encrypted, buffer_t *clear, buffer_t *key){
     buffer_clear(&IV);
 }
 
+char* prepend_prefix(uchar* original_str, const char* prefix) {
+    // Calculate the length of the new string
+    size_t original_len = strlen((char *)original_str);
+    size_t prefix_len = strlen(prefix);
+    size_t new_len = original_len + prefix_len + 1; // 1 for the null terminator
+
+    // Allocate memory for the new string
+    char* new_str = (char*)malloc(new_len);
+    if (new_str == NULL) {
+        // Handle memory allocation failure
+        perror("Memory allocation error");
+        exit(EXIT_FAILURE);
+    }
+
+    // Copy the prefix to the new string
+    strcpy(new_str, prefix);
+
+    // Concatenate the original string to the new string
+    strcat(new_str, (char *) original_str);
+
+    return new_str;
+}
+
 void CaseDH(const char *server_host, const int server_port, gmp_randstate_t state){
-/* to be filled in */
+    buffer_t clear, encrypted, key, IV;
+    uchar *msg = (uchar*)"It's a long way to Tipperary";
+    buffer_init(&clear, strlen((char*)msg));
+    buffer_init(&encrypted, 1);
+    buffer_init(&key, BLOCK_LENGTH);
+    buffer_init(&IV, BLOCK_LENGTH);
+
+
+    mpz_t a, ga, gb, gab, g, p;
+    char buf[1024], buf2[1024], *packet, *tmp;
+    mpz_inits(a, ga, gb, gab, g, p, NULL);
+
+    mpz_set_str(p, "8000000000000000000000000000001D", 16);
+    mpz_set_ui(g, 2);
+
+    // Step 1
+
+    // generate random integer a
+    size_t nbits = mpz_sizeinbase(p, 2)-1;
+    DH_init(a, state, nbits);
+    mpz_powm_sec(ga, g, a, p);
+
+    // send ga to Bob
+    msg_export_mpz(buf, "DH: ALICE/BOB CONNECT1 ", ga, 0);
+    printf("Sending: %s\n", buf);
+    network_send(server_host, server_port, client_host, client_port, buf);
+
+    // Step 3
+
+    // receive gb from Bob
+    packet = network_recv(10);
+    parse_packet(NULL, NULL, &tmp, packet);
+    printf("Received: %s [%d]\n", tmp, (int)strlen(tmp));
+    tmp = tmp + strlen("DH: ALICE/BOB CONNECT2 0x");
+    mpz_set_str(gb, tmp, 16);
+
+    // determine key
+    mpz_powm_sec(gab, gb, a, p);
+    gmp_printf("gab=%#Zx\n", gab);
+    AES128_key_from_number(&key, gab);
+    printf("%d\n", key.length);
+    printf("KEY: ");
+    // buffer_to_base64(&key, &key);
+    // printf("%d\n", key.length);
+    // buffer_print(stdout, &key);
+    printf("\n");
+
+    // encrypt with AES and send to Bob
+    buffer_random(&IV, BLOCK_LENGTH);
+    buffer_from_string(&clear, msg, strlen((char *)msg));
+    aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');
+    buffer_to_base64(&encrypted, &encrypted);
+
+    uchar *encrypted_str = string_from_buffer(&encrypted);
+    printf("%s", "Sending: ");
+    buffer_print(stdout, &encrypted);
+    printf("\n");
+    char *encrypt_msg = prepend_prefix(encrypted_str, "DH: ALICE/BOB CONNECT3 ");
+    msg_export_string(buf2,"DH: ALICE/BOB CONNECT3 ", encrypted_str);
+    printf("%s\n", buf2);
+    network_send(server_host, server_port, client_host, client_port, encrypt_msg);
+    
+
+    mpz_clears(a, ga, gb, gab, g, p, NULL);
+    buffer_clear(&clear);
+    buffer_clear(&encrypted);
+    buffer_clear(&key);
+    buffer_clear(&IV);
+    free(encrypt_msg);
+    free(encrypted_str);
+    return 1;
+
 }
 
 int CaseSTS(const char *server_host, const int server_port,
