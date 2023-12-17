@@ -151,7 +151,7 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
 }
 
 void try_send_aes(const char *host, const int port){
-    uchar *msg = (uchar*)"AES";
+    uchar *msg = (uchar*)"It's a long way to Tipperary";
     mpz_t gab;
 
     mpz_init_set_str(gab, "12345612345678907890", 10);
