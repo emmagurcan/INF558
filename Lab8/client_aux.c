@@ -125,7 +125,9 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
     buffer_init(&key, BLOCK_LENGTH);
     buffer_init(&IV, BLOCK_LENGTH);
 
+    
     printf("Sending: %s\n", msg);
+    network_send(host, port, client_host, client_port, msg);
 
     AES128_key_from_number(&key, gab);
     buffer_random(&IV, BLOCK_LENGTH);
@@ -137,9 +139,6 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
     printf("%s", "Sending: ");
     buffer_print(stdout, &encrypted);
     printf("\n");
-    // printf("Sending: %s\n", encrypted_str);
-
-    // network_send(host, port, client_host, client_port, "WOOHOO");
 
     network_send(host, port, client_host, client_port, (char *) encrypted_str);
 
@@ -149,10 +148,10 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
 
     buffer_clear(&clear);
     buffer_clear(&encrypted);
+    buffer_clear(&encrypted2);
     buffer_clear(&key);
     buffer_clear(&IV);
     free(encrypted_str);
-    // free(computed);
     return 1;
 
 }
