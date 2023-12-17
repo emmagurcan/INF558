@@ -117,13 +117,41 @@ void try_aes(){
 }
 
 int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
-    int status = NOT_YET_IMPLEMENTED;
-/* to be filled in */
-    return status;
+    int done_after = 50;
+    buffer_t clear, encrypted, key, IV;
+    buffer_init(&clear, strlen((char*)msg));
+    buffer_init(&encrypted, 1);
+    buffer_init(&key, BLOCK_LENGTH);
+    buffer_init(&IV, BLOCK_LENGTH);
+    printf("Sending: %s\n", msg);
+    AES128_key_from_number(&key, gab);
+    buffer_random(&IV, BLOCK_LENGTH);
+    buffer_from_string(&clear, msg, strlen((char *)msg));
+
+    aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');
+    uchar *encrypted_str = string_from_buffer(&encrypted);
+    printf("%s", "Sending: ");
+    buffer_print(stdout, &encrypted);
+    printf("\n");
+    // printf("Sending: %s\n", encrypted_str);
+
+    // network_send(host, port, client_host, client_port, "WOOHOO");
+
+    network_send(host, port, client_host, client_port, (char *) encrypted_str);
+
+    // char *computed = network_recv(done_after);
+    // parse_packet(&client_host, &client_port, (char **)&msg, computed);
+
+    buffer_clear(&clear);
+    buffer_clear(&encrypted);
+    buffer_clear(&key);
+    buffer_clear(&IV);
+    return 1;
+
 }
 
 void try_send_aes(const char *host, const int port){
-    uchar *msg = (uchar*)"It's a long way to Tipperary";
+    uchar *msg = (uchar*)"AES";
     mpz_t gab;
 
     mpz_init_set_str(gab, "12345612345678907890", 10);
