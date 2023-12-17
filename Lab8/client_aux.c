@@ -232,7 +232,14 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     mpz_powm_sec(gab, gb, a, p);
     gmp_printf("gab=%#Zx\n", gab);
     AES128_key_from_number(&key, gab);
-    printf("%d\n", key.length);
+    // printf("Key: ");
+    // buffer_to_base64(&key, &key);
+    // buffer_print(stdout, &key);
+    // printf("\n");
+    // buffer_from_base64(&key, &key);
+
+
+    // buffer_print(stdout, &key);
 
     // encrypt with AES and send to Bob
     buffer_random(&IV, BLOCK_LENGTH);
