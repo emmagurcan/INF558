@@ -118,9 +118,10 @@ void try_aes(){
 
 int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
     int done_after = 50;
-    buffer_t clear, encrypted, key, IV;
+    buffer_t clear, encrypted, key, IV, encrypted2;
     buffer_init(&clear, strlen((char*)msg));
     buffer_init(&encrypted, 1);
+    buffer_init(&encrypted2, 1);
     buffer_init(&key, BLOCK_LENGTH);
     buffer_init(&IV, BLOCK_LENGTH);
 
@@ -129,7 +130,8 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
     AES128_key_from_number(&key, gab);
     buffer_random(&IV, BLOCK_LENGTH);
     buffer_from_string(&clear, msg, strlen((char *)msg));
-    aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');
+    aes_CBC_encrypt(&encrypted2, &clear, &key, &IV, 's');
+    buffer_to_base64(&encrypted, &encrypted2);
 
     uchar *encrypted_str = string_from_buffer(&encrypted);
     printf("%s", "Sending: ");
@@ -143,11 +145,14 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
 
     // char *computed = network_recv(done_after);
     // parse_packet(&client_host, &client_port, (char **)&msg, computed);
+    
 
     buffer_clear(&clear);
     buffer_clear(&encrypted);
     buffer_clear(&key);
     buffer_clear(&IV);
+    free(encrypted_str);
+    // free(computed);
     return 1;
 
 }

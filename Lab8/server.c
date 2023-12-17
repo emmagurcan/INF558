@@ -28,7 +28,7 @@
 /* to be filled in */
 
 #ifdef CORRECTION
-#define DEBUG 0
+#define DEBUG 1
 #else
 #define DEBUG 2
 #endif
