@@ -123,12 +123,14 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
     buffer_init(&encrypted, 1);
     buffer_init(&key, BLOCK_LENGTH);
     buffer_init(&IV, BLOCK_LENGTH);
+
     printf("Sending: %s\n", msg);
+
     AES128_key_from_number(&key, gab);
     buffer_random(&IV, BLOCK_LENGTH);
     buffer_from_string(&clear, msg, strlen((char *)msg));
-
     aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');
+
     uchar *encrypted_str = string_from_buffer(&encrypted);
     printf("%s", "Sending: ");
     buffer_print(stdout, &encrypted);
@@ -151,7 +153,7 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
 }
 
 void try_send_aes(const char *host, const int port){
-    uchar *msg = (uchar*)"It's a long way to Tipperary";
+    uchar *msg = (uchar*)"AES";
     mpz_t gab;
 
     mpz_init_set_str(gab, "12345612345678907890", 10);
