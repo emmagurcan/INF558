@@ -233,11 +233,6 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     gmp_printf("gab=%#Zx\n", gab);
     AES128_key_from_number(&key, gab);
     printf("%d\n", key.length);
-    printf("KEY: ");
-    // buffer_to_base64(&key, &key);
-    // printf("%d\n", key.length);
-    // buffer_print(stdout, &key);
-    printf("\n");
 
     // encrypt with AES and send to Bob
     buffer_random(&IV, BLOCK_LENGTH);
