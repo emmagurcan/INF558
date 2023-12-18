@@ -225,6 +225,7 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     network_send(server_host, server_port, client_host, client_port, buf);
 
     mpz_clears(a, ga, gb, b, gab, g, p, NULL);
+    fflush(stdout);
     buffer_clear(&clear);
     buffer_clear(&encrypted);
     buffer_clear(&key);
@@ -232,7 +233,8 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     buffer_clear(&encrypted2);
     free(encrypted_str);
     free(packet);
-    free(tmp);
+    // free(tmp);
+    // free(buf);
 }
 
 int CaseSTS(const char *server_host, const int server_port,
