@@ -232,6 +232,7 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     buffer_clear(&encrypted2);
     free(encrypted_str);
     free(packet);
+    free(tmp);
 }
 
 int CaseSTS(const char *server_host, const int server_port,
