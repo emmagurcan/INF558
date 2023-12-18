@@ -29,7 +29,7 @@
 /* to be filled in */
 
 #ifdef CORRECTION
-#define DEBUG 0
+#define DEBUG 1
 #else
 #define DEBUG 2
 #endif
@@ -138,6 +138,7 @@ int send_with_aes(const char *host, const int port, uchar *msg, mpz_t gab){
     buffer_print(stdout, &encrypted);
     printf("\n");
 
+
     network_send(host, port, client_host, client_port, (char *) encrypted_str);
 
     buffer_clear(&clear);
@@ -168,29 +169,6 @@ void prepare_cipher(buffer_t *encrypted, buffer_t *clear, buffer_t *key){
     buffer_clear(&IV);
 }
 
-char* prepend_prefix(uchar* original_str, const char* prefix) {
-    // Calculate the length of the new string
-    size_t original_len = strlen((char *)original_str);
-    size_t prefix_len = strlen(prefix);
-    size_t new_len = original_len + prefix_len + 1; // 1 for the null terminator
-
-    // Allocate memory for the new string
-    char* new_str = (char*)malloc(new_len);
-    if (new_str == NULL) {
-        // Handle memory allocation failure
-        perror("Memory allocation error");
-        exit(EXIT_FAILURE);
-    }
-
-    // Copy the prefix to the new string
-    strcpy(new_str, prefix);
-
-    // Concatenate the original string to the new string
-    strcat(new_str, (char *) original_str);
-
-    return new_str;
-}
-
 void CaseDH(const char *server_host, const int server_port, gmp_randstate_t state){
     buffer_t clear, encrypted, key, IV;
     uchar *msg = (uchar*)"It's a long way to Tipperary";
@@ -200,9 +178,9 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     buffer_init(&IV, BLOCK_LENGTH);
 
 
-    mpz_t a, ga, gb, gab, g, p;
-    char buf[1024], buf2[1024], *packet, *tmp;
-    mpz_inits(a, ga, gb, gab, g, p, NULL);
+    mpz_t a, ga, gb,b, gab, g, p;
+    char buf[1024], *packet, *tmp;
+    mpz_inits(a, ga, gb, b, gab, g, p, NULL);
 
     mpz_set_str(p, "8000000000000000000000000000001D", 16);
     mpz_set_ui(g, 2);
@@ -229,43 +207,61 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     mpz_set_str(gb, tmp, 16);
 
     // determine key
+    mpz_mul(b, a, b);
     mpz_powm_sec(gab, gb, a, p);
     gmp_printf("gab=%#Zx\n", gab);
     AES128_key_from_number(&key, gab);
-    // printf("Key: ");
-    // buffer_to_base64(&key, &key);
-    // buffer_print(stdout, &key);
-    // printf("\n");
-    // buffer_from_base64(&key, &key);
-
-
-    // buffer_print(stdout, &key);
 
     // encrypt with AES and send to Bob
+    // buffer_t encrypted2, decrypted2;
+    // buffer_init(&encrypted2, 1);
+    // buffer_init(&decrypted2, 1);
+
     buffer_random(&IV, BLOCK_LENGTH);
     buffer_from_string(&clear, msg, strlen((char *)msg));
-    aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');
-    buffer_to_base64(&encrypted, &encrypted);
+    aes_CBC_encrypt(&encrypted2, &clear, &key, &IV, 's');
+    printf("enc="); buffer_print_int(stdout, &encrypted2); printf("\n");
+    buffer_to_base64(&encrypted, &encrypted2);
+
+    // printf("enc1="); buffer_print_int(stdout, &encrypted); printf("\n");
 
     uchar *encrypted_str = string_from_buffer(&encrypted);
     printf("%s", "Sending: ");
     buffer_print(stdout, &encrypted);
     printf("\n");
-    char *encrypt_msg = prepend_prefix(encrypted_str, "DH: ALICE/BOB CONNECT3 ");
-    msg_export_string(buf2,"DH: ALICE/BOB CONNECT3 ", encrypted_str);
-    printf("%s\n", buf2);
-    network_send(server_host, server_port, client_host, client_port, encrypt_msg);
+
+    msg_export_string(buf, "DH: ALICE/BOB CONNECT3 ", (char *)encrypted_str);
+    network_send(server_host, server_port, client_host, client_port, buf);
+    // char buf2[1024];
+    // msg_import_string(buf2, buf, "DH: ALICE/BOB CONNECT3 ");
+    // buffer_t in;
+    // buffer_init(&in, strlen(buf2));
+    // buffer_from_string(&in, (uchar *)buf2, strlen(buf2));
+
+    // buffer_t decrypted;
+    // // printf("enc1="); buffer_print_int(stdout, &encrypted); printf("\n");
+    // buffer_from_base64(&decrypted2, &in);
+    // printf("enc2="); buffer_print_int(stdout, &decrypted2); printf("\n");
+    // buffer_init(&decrypted, 1);
+    // aes_CBC_decrypt(&decrypted, &decrypted2, &key, 's');
+    // printf("DECRYPTED: ");
+    // buffer_print(stdout, &decrypted);
+    // printf("\n");
+
+    // buffer_clear(&decrypted);
+    // buffer_clear(&decrypted2);
+    // buffer_clear(&in);
+    
+    
     
 
-    mpz_clears(a, ga, gb, gab, g, p, NULL);
+    mpz_clears(a, ga, gb, b, gab, g, p, NULL);
     buffer_clear(&clear);
     buffer_clear(&encrypted);
     buffer_clear(&key);
     buffer_clear(&IV);
-    free(encrypt_msg);
+    // free(encrypt_msg);
     free(encrypted_str);
-    return 1;
-
 }
 
 int CaseSTS(const char *server_host, const int server_port,

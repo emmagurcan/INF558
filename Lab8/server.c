@@ -130,11 +130,6 @@ void CaseDH(const char *client_host, const int client_port, char *mesg){
 
     /* receiving a message encrypted with AES key = gab */
     AES128_key_from_number(&key, gab);
-    printf("Key: ");
-    buffer_to_base64(&key, &key);
-    buffer_print(stdout, &key);
-    printf("\n");
-    buffer_from_base64(&key, &key);
     packet = network_recv(5); // If client doesn't reply in 5 sec then abort.
     if (parse_packet(NULL, NULL, &tmp, packet) == 0) {
         fprintf(stderr, "BAD packet received in DH\n");
