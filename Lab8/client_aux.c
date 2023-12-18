@@ -170,13 +170,13 @@ void prepare_cipher(buffer_t *encrypted, buffer_t *clear, buffer_t *key){
 }
 
 void CaseDH(const char *server_host, const int server_port, gmp_randstate_t state){
-    buffer_t clear, encrypted, key, IV;
+    buffer_t clear, encrypted, encrypted2, key, IV;
     uchar *msg = (uchar*)"It's a long way to Tipperary";
     buffer_init(&clear, strlen((char*)msg));
     buffer_init(&encrypted, 1);
     buffer_init(&key, BLOCK_LENGTH);
     buffer_init(&IV, BLOCK_LENGTH);
-
+    buffer_init(&encrypted2, 1);
 
     mpz_t a, ga, gb,b, gab, g, p;
     char buf[1024], *packet, *tmp;
@@ -186,7 +186,6 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     mpz_set_ui(g, 2);
 
     // Step 1
-
     // generate random integer a
     size_t nbits = mpz_sizeinbase(p, 2)-1;
     DH_init(a, state, nbits);
@@ -198,7 +197,6 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     network_send(server_host, server_port, client_host, client_port, buf);
 
     // Step 3
-
     // receive gb from Bob
     packet = network_recv(10);
     parse_packet(NULL, NULL, &tmp, packet);
@@ -213,17 +211,10 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     AES128_key_from_number(&key, gab);
 
     // encrypt with AES and send to Bob
-    // buffer_t encrypted2, decrypted2;
-    // buffer_init(&encrypted2, 1);
-    // buffer_init(&decrypted2, 1);
-
     buffer_random(&IV, BLOCK_LENGTH);
     buffer_from_string(&clear, msg, strlen((char *)msg));
     aes_CBC_encrypt(&encrypted2, &clear, &key, &IV, 's');
-    printf("enc="); buffer_print_int(stdout, &encrypted2); printf("\n");
     buffer_to_base64(&encrypted, &encrypted2);
-
-    // printf("enc1="); buffer_print_int(stdout, &encrypted); printf("\n");
 
     uchar *encrypted_str = string_from_buffer(&encrypted);
     printf("%s", "Sending: ");
@@ -232,36 +223,15 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
 
     msg_export_string(buf, "DH: ALICE/BOB CONNECT3 ", (char *)encrypted_str);
     network_send(server_host, server_port, client_host, client_port, buf);
-    // char buf2[1024];
-    // msg_import_string(buf2, buf, "DH: ALICE/BOB CONNECT3 ");
-    // buffer_t in;
-    // buffer_init(&in, strlen(buf2));
-    // buffer_from_string(&in, (uchar *)buf2, strlen(buf2));
-
-    // buffer_t decrypted;
-    // // printf("enc1="); buffer_print_int(stdout, &encrypted); printf("\n");
-    // buffer_from_base64(&decrypted2, &in);
-    // printf("enc2="); buffer_print_int(stdout, &decrypted2); printf("\n");
-    // buffer_init(&decrypted, 1);
-    // aes_CBC_decrypt(&decrypted, &decrypted2, &key, 's');
-    // printf("DECRYPTED: ");
-    // buffer_print(stdout, &decrypted);
-    // printf("\n");
-
-    // buffer_clear(&decrypted);
-    // buffer_clear(&decrypted2);
-    // buffer_clear(&in);
-    
-    
-    
 
     mpz_clears(a, ga, gb, b, gab, g, p, NULL);
     buffer_clear(&clear);
     buffer_clear(&encrypted);
     buffer_clear(&key);
     buffer_clear(&IV);
-    // free(encrypt_msg);
+    buffer_clear(&encrypted2);
     free(encrypted_str);
+    free(packet);
 }
 
 int CaseSTS(const char *server_host, const int server_port,
