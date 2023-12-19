@@ -265,12 +265,10 @@ int CaseSTS(const char *client_host, const int client_port, char *mesg,
     /**** Step 4: Bob receives z and CA ****/
     packet = network_recv(-1);
     parse_packet(NULL, NULL, &from_Alice, packet);
-    printf("Server receives: %s\n", from_Alice);
     /* from_Alice = "STS: ALICE/BOB CONNECT3 z" */
-    if(msg_import_string(buf, from_Alice, "STS: ALICE/BOB CONNECT3 ") <= 0){
+    if(msg_import_string(buf, from_Alice, "STS: ALICE/BOB CONNECT 3 ") <= 0){
         free(from_Alice);
         free(packet);
-        printf("RETURNED\n");
         return retno;
     }
     free(from_Alice);

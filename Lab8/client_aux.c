@@ -324,9 +324,9 @@ int CaseSTS(const char *server_host, const int server_port,
     buffer_from_mpz(&clear, signA);
     aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');
     buffer_to_base64(&out, &encrypted);
-    
+
     tmp = (char *) string_from_buffer(&out);
-    msg_export_string(buf, "STS ALICE/BOB CONNECT 3 ", tmp);
+    msg_export_string(buf, "STS: ALICE/BOB CONNECT 3 ", tmp);
     printf("Sending: %s\n", tmp);
     network_send(server_host, server_port, client_host, client_port, buf);
     free(tmp);
@@ -337,7 +337,7 @@ int CaseSTS(const char *server_host, const int server_port,
     free(tmp);
     network_send(client_host, client_port, server_host, server_port, buf);
 
-    packet = network_recv(10);
+    packet = network_recv(-1);
     parse_packet(NULL, NULL, &tmp, packet);
     msg_import_string(buf, tmp, "STS: BOB/ALICE CONNECT4 ");
     printf("%s\n", buf);
