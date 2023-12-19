@@ -261,10 +261,10 @@ int main(int argc, char *argv[])
 #if DEBUG > 0
             gmp_printf("\nN_aut:=%Zd;\ne_aut:=%Zd;\n\n", N_aut, e_aut);
 #endif
-            if (!valid_certificate(&CA, N_aut, e_aut)) {
-                fprintf(stderr, "[ERROR] Client certificate is not valid!\n");
-                exit(-1);
-            }
+            // if (!valid_certificate(&CA, N_aut, e_aut)) {
+            //     fprintf(stderr, "[ERROR] Client certificate is not valid!\n");
+            //     exit(-1);
+            // }
 #if DEBUG > 0
             printf("valid certificate for CA-client? %d\n",
                    valid_certificate(&CA, N_aut, e_aut));

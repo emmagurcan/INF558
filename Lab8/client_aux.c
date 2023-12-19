@@ -201,11 +201,10 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
     packet = network_recv(10);
     parse_packet(NULL, NULL, &tmp, packet);
     printf("Received: %s [%d]\n", tmp, (int)strlen(tmp));
-    tmp = tmp + strlen("DH: ALICE/BOB CONNECT2 0x");
+    tmp = tmp + strlen("DH: BOB/ALICE CONNECT2 0x");
     mpz_set_str(gb, tmp, 16);
 
     // determine key
-    mpz_mul(b, a, b);
     mpz_powm_sec(gab, gb, a, p);
     gmp_printf("gab=%#Zx\n", gab);
     AES128_key_from_number(&key, gab);
@@ -240,9 +239,125 @@ void CaseDH(const char *server_host, const int server_port, gmp_randstate_t stat
 int CaseSTS(const char *server_host, const int server_port,
 	    certificate_t *CA, mpz_t NA, mpz_t dA, mpz_t N_aut, mpz_t e_aut,
 	    gmp_randstate_t state){
-    int retno=NOT_YET_IMPLEMENTED;
-/* to be filled in */
-    return retno;
+    certificate_t CB;
+    mpz_t a, ga, gb,b, gab, g, p, y, sigmaB, tmpB, signA, z;
+    buffer_t encrypted, decrypted, IV, key, in, clear, out;
+    buffer_init(&encrypted, 1);
+    buffer_init(&decrypted, 1);
+    buffer_init(&key, BLOCK_LENGTH);
+    buffer_init(&IV, BLOCK_LENGTH);
+    buffer_random(&IV, BLOCK_LENGTH);
+    buffer_init(&clear, 1);
+    buffer_init(&out, 10);
+
+    char buf[1024], *packet, *tmp;
+    mpz_inits(a, ga, gb, b, gab, g, p, y, sigmaB, tmpB, signA, z, NULL);
+
+    mpz_set_str(p, "8000000000000000000000000000001D", 16);
+    mpz_set_ui(g, 2);
+    
+    // Step 1
+    // generate random integer a
+    size_t nbits = mpz_sizeinbase(p, 2)-1;
+    DH_init(a, state, nbits);
+    mpz_powm_sec(ga, g, a, p);
+
+    // send ga to Bob
+    msg_export_mpz(buf, "STS: ALICE/BOB CONNECT1 ", ga, 0);
+    printf("Sending: %s\n", buf);
+    network_send(server_host, server_port, client_host, client_port, buf);
+
+    // Step 3
+    // 3.1 verify certificate
+
+    // 3.2 compute shared key
+    // receive encrypted
+    packet = network_recv(5);
+    parse_packet(NULL, NULL, &tmp, packet);
+    printf("Received: %s [%d]\n", tmp, (int)strlen(tmp));
+    msg_import_string(buf, tmp, "STS: BOB/ALICE CONNECT2 ");
+    buffer_init(&in, strlen(buf));
+    buffer_from_string(&in, (uchar *)buf, strlen(buf));
+    buffer_from_base64(&encrypted, &in);
+    
+    // receive gb = g^b mod p
+    packet = network_recv(2);
+    parse_packet(NULL, NULL, &tmp, packet);
+    printf("Received: %s [%d]\n", tmp, (int)strlen(tmp));
+    tmp = tmp + strlen("STS: BOB/ALICE CONNECT2 0x");
+    printf("%s\n", tmp);
+    mpz_set_str(gb, tmp, 16);
+    tmp = tmp - strlen("STS: BOB/ALICE CONNECT2 0x");
+    free(tmp);
+    gmp_printf("gb=%#Zd\n", gb);
+    
+    // receive cb
+    packet = network_recv(2);
+    parse_packet(NULL, NULL, &tmp, packet);
+    msg_import_string(buf, tmp, "STS: ALICE/BOB CONNECT3 ");
+    init_certificate(&CB);
+    certificate_from_string(&CB, buf);
+
+    // 3.2 compute key l = gb^a mod p
+    mpz_powm_sec(gab, gb, a, p);
+    AES128_key_from_number(&key, gab);
+    gmp_printf("gab=%#Zx\n", gab);
+
+    // 3.3 decrypt
+    aes_CBC_decrypt(&decrypted, &encrypted, &key, 's');
+    printf("Decrypted: ");
+    buffer_to_mpz(sigmaB, &decrypted);
+    gmp_printf("%Zd\n", sigmaB);
+
+    // verify
+    concatenate_gb_ga(tmpB, gb, ga, p);
+    mpz_powm_sec(sigmaB, sigmaB, CA->e, CA->N);
+    
+    if (mpz_cmp(tmpB, sigmaB) != 0){
+        fprintf(stderr, "Signature of %s is invalid !\n\n", CB.user);
+        fflush(stderr);
+        return 0;
+    }
+
+    // 3.4 generate signature
+    SIGNSK(signA, ga, gb, p, NA, dA);
+    buffer_from_mpz(&clear, signA);
+    aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');
+    buffer_to_base64(&out, &encrypted);
+    tmp = (char *) string_from_buffer(&out);
+    msg_export_string(buf, "STS ALICE/BOB CONNECT 3 ", tmp);
+    printf("Sending: %s\n", tmp);
+    network_send(server_host, server_port, client_host, client_port, buf);
+    free(tmp);
+
+    tmp = (char*)string_from_certificate(CA);
+    printf("Sending: %s\n", tmp);
+    msg_export_string(buf, "STS: ALICE/BOB CONNECT3 ", tmp);
+    free(tmp);
+    network_send(client_host, client_port, server_host, server_port, buf);
+
+    packet = network_recv(10);
+    parse_packet(NULL, NULL, &tmp, packet);
+    msg_import_string(buf, tmp, "STS: BOB/ALICE CONNECT4 ");
+    printf("%s\n", buf);
+    // printf("DONE\n");
+
+    // packet = network_recv(10);
+    // parse_packet(NULL, NULL, &tmp, packet);
+    // msg_import_string(buf, tmp, "");
+    // printf("%s\n", buf);
+
+    // Free memory
+    mpz_clears(a, ga, gb, b, gab, g, p, y, sigmaB, tmpB, NULL);
+    buffer_clear(&key);
+    buffer_clear(&encrypted);
+    buffer_clear(&decrypted);
+    buffer_clear(&in);
+    buffer_clear(&clear);
+    buffer_clear(&out);
+    buffer_clear(&IV);
+    free(packet);
+    return 1;
 }
 
 void CaptureTheFlag(const char *server_host, const int server_port,

@@ -208,6 +208,7 @@ int CaseSTS(const char *client_host, const int client_port, char *mesg,
     DH_init(b, state, nbits);
     /**** Step 2.2 ****/
     mpz_powm_sec(gb, g, b, p);
+    gmp_printf("gb=%Zd\n", gb);
 #if DEBUG > 0
     gmp_printf("ga=%Zd, gb=g^%Zd=%Zd\n", ga, b, gb);
 #endif
@@ -217,6 +218,11 @@ int CaseSTS(const char *client_host, const int client_port, char *mesg,
     gmp_printf("gab=%#Zx\n", gab);
 #endif
     AES128_key_from_number(&key, gab);
+    printf("Key: ");
+    // buffer_from_base64(&key, &key);
+    buffer_print(stdout, &key);
+    // buffer_to_base64(&key, &key);
+    printf("\n");
 #if DEBUG > 0
     printf("\nkey="); buffer_print_int(stdout, &key); printf("\n");
 #endif
@@ -248,8 +254,10 @@ int CaseSTS(const char *client_host, const int client_port, char *mesg,
     network_send(client_host, client_port, server_host, server_port, buf);
 
     msg_export_mpz(buf, "STS: BOB/ALICE CONNECT2 ", gb, 0);
+    printf("Server sending: %s\n", buf);
     network_send(client_host, client_port, server_host, server_port, buf);
     tmp = (char*)string_from_certificate(CB);
+    printf("Server sending: %s\n", tmp);
     msg_export_string(buf, "STS: BOB/ALICE CONNECT2 ", tmp);
     free(tmp);
     network_send(client_host, client_port, server_host, server_port, buf);
