@@ -265,10 +265,12 @@ int CaseSTS(const char *client_host, const int client_port, char *mesg,
     /**** Step 4: Bob receives z and CA ****/
     packet = network_recv(-1);
     parse_packet(NULL, NULL, &from_Alice, packet);
+    printf("Server receives: %s\n", from_Alice);
     /* from_Alice = "STS: ALICE/BOB CONNECT3 z" */
     if(msg_import_string(buf, from_Alice, "STS: ALICE/BOB CONNECT3 ") <= 0){
         free(from_Alice);
         free(packet);
+        printf("RETURNED\n");
         return retno;
     }
     free(from_Alice);
@@ -280,8 +282,10 @@ int CaseSTS(const char *client_host, const int client_port, char *mesg,
     buffer_from_string(&in, (uchar*)buf, strlen(buf));
     buffer_init(&z, 1);
     buffer_from_base64(&z, &in);
+    printf("Made it \n");
     packet = network_recv(-1);
     parse_packet(NULL, NULL, &from_Alice, packet);
+    printf("Server receives: %s\n", from_Alice);
     free(packet);
     /* from_Bob = "STS: ALICE/BOB CONNECT3 CA" */
     if(msg_import_string(buf, from_Alice, "STS: ALICE/BOB CONNECT3 ") <= 0){

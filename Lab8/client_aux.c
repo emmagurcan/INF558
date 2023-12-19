@@ -290,7 +290,7 @@ int CaseSTS(const char *server_host, const int server_port,
     tmp = tmp - strlen("STS: BOB/ALICE CONNECT2 0x");
     free(tmp);
     gmp_printf("gb=%#Zd\n", gb);
-    
+
     // receive cb
     packet = network_recv(2);
     parse_packet(NULL, NULL, &tmp, packet);
@@ -324,6 +324,7 @@ int CaseSTS(const char *server_host, const int server_port,
     buffer_from_mpz(&clear, signA);
     aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');
     buffer_to_base64(&out, &encrypted);
+    
     tmp = (char *) string_from_buffer(&out);
     msg_export_string(buf, "STS ALICE/BOB CONNECT 3 ", tmp);
     printf("Sending: %s\n", tmp);
