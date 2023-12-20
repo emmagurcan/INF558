@@ -1,6 +1,6 @@
 #define DEFAULT_SERVER_PORT 14018// 31415
 #define DEFAULT_PORT 1789
-#define DEFAULT_HOST "autriche"
+#define DEFAULT_HOST "oncidium"
 #define DEFAULT_NAME "emma.gurcan"
 
 void set_client_host(const char *ch);

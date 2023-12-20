@@ -279,7 +279,6 @@ int CaseSTS(const char *server_host, const int server_port,
     buffer_init(&in, strlen(buf));
     buffer_from_string(&in, (uchar *)buf, strlen(buf));
     buffer_from_base64(&encrypted, &in);
-    
     // receive gb = g^b mod p
     packet = network_recv(2);
     parse_packet(NULL, NULL, &tmp, packet);
@@ -298,6 +297,24 @@ int CaseSTS(const char *server_host, const int server_port,
     init_certificate(&CB);
     certificate_from_string(&CB, buf);
 
+    // if (!valid_certificate(&CB, N_aut, e_aut)) {
+    //     fprintf(stderr, "Certificate of %s is invalid!\n\n", CB.user);
+    //     fflush(stderr);
+    //     gmp_randclear(state);
+    //     buffer_clear(&in);
+    //     buffer_clear(&decrypted);
+    //     buffer_clear(&encrypted);
+    //     buffer_clear(&out);
+    //     buffer_clear(&IV);
+    //     buffer_clear(&key);
+    //     buffer_clear(&clear);
+    //     mpz_clears(a, ga, gb, b, gab, g, p, y, sigmaB, tmpB, NULL);
+    //     clear_certificate(&CB);
+    //     free(packet);
+    //     return 0;
+    // }
+    
+    // 3.1 verify certificate
     // 3.2 compute key l = gb^a mod p
     mpz_powm_sec(gab, gb, a, p);
     AES128_key_from_number(&key, gab);
@@ -325,28 +342,30 @@ int CaseSTS(const char *server_host, const int server_port,
     aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');
     buffer_to_base64(&out, &encrypted);
 
+    // 3.6 send 
     tmp = (char *) string_from_buffer(&out);
-    msg_export_string(buf, "STS: ALICE/BOB CONNECT 3 ", tmp);
     printf("Sending: %s\n", tmp);
+    msg_export_string(buf, "STS: ALICE/BOB CONNECT 3 ", tmp);
     network_send(server_host, server_port, client_host, client_port, buf);
     free(tmp);
 
     tmp = (char*)string_from_certificate(CA);
     printf("Sending: %s\n", tmp);
     msg_export_string(buf, "STS: ALICE/BOB CONNECT3 ", tmp);
-    free(tmp);
-    network_send(client_host, client_port, server_host, server_port, buf);
+    printf("Buffer mode: \n");
+    printf("%s\n", buf);
+    printf("\n");
+    network_send(server_host, server_port, client_host, client_port, buf);
+    
 
     packet = network_recv(-1);
     parse_packet(NULL, NULL, &tmp, packet);
     msg_import_string(buf, tmp, "STS: BOB/ALICE CONNECT4 ");
-    printf("%s\n", buf);
-    // printf("DONE\n");
-
-    // packet = network_recv(10);
-    // parse_packet(NULL, NULL, &tmp, packet);
-    // msg_import_string(buf, tmp, "");
-    // printf("%s\n", buf);
+    buffer_init(&in, strlen(buf));
+    buffer_from_string(&in, (uchar *)buf, strlen(buf));
+    buffer_from_base64(&encrypted, &in);
+    aes_CBC_decrypt(&decrypted, &encrypted, &key, 's');
+    buffer_print(stdout, &decrypted);
 
     // Free memory
     mpz_clears(a, ga, gb, b, gab, g, p, y, sigmaB, tmpB, NULL);
@@ -358,6 +377,7 @@ int CaseSTS(const char *server_host, const int server_port,
     buffer_clear(&out);
     buffer_clear(&IV);
     free(packet);
+    clear_certificate(&CB);
     return 1;
 }
 

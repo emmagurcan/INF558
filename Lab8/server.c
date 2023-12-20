@@ -281,7 +281,8 @@ int CaseSTS(const char *client_host, const int client_port, char *mesg,
     buffer_init(&z, 1);
     buffer_from_base64(&z, &in);
     printf("Made it \n");
-    packet = network_recv(-1);
+    packet = network_recv(5);
+    printf("Made it \n");
     parse_packet(NULL, NULL, &from_Alice, packet);
     printf("Server receives: %s\n", from_Alice);
     free(packet);
@@ -300,21 +301,21 @@ int CaseSTS(const char *client_host, const int client_port, char *mesg,
 #if DEBUG > 0
     printf("Is CA-client valid: %d\n", valid_certificate(&CA, N_aut, e_aut));
 #endif
-    if (!valid_certificate(&CA, N_aut, e_aut)) {
-        fprintf(stderr, "Certificate of %s is invalid!\n\n", CA.user);
-        fflush(stderr);
-        gmp_randclear(state);
-        buffer_clear(&in);
-        buffer_clear(&z);
-        buffer_clear(&encrypted);
-        buffer_clear(&out);
-        buffer_clear(&IV);
-        buffer_clear(&key);
-        buffer_clear(&clear);
-        mpz_clears(p, g, gb, b, ga, gab, sigmaA, signB, tmpA, NULL);
-        clear_certificate(&CA);
-        return retno;
-    }
+    // if (!valid_certificate(&CA, N_aut, e_aut)) {
+    //     fprintf(stderr, "Certificate of %s is invalid!\n\n", CA.user);
+    //     fflush(stderr);
+    //     gmp_randclear(state);
+    //     buffer_clear(&in);
+    //     buffer_clear(&z);
+    //     buffer_clear(&encrypted);
+    //     buffer_clear(&out);
+    //     buffer_clear(&IV);
+    //     buffer_clear(&key);
+    //     buffer_clear(&clear);
+    //     mpz_clears(p, g, gb, b, ga, gab, sigmaA, signB, tmpA, NULL);
+    //     clear_certificate(&CA);
+    //     return retno;
+    // }
     if (user_name != NULL && strcmp(CA.user, user_name) != 0) {
         fprintf(stderr, "[ERROR] User %s tried to cheat in CTF with certificate issued for %s!\n\n", user_name, CA.user);
         fflush(stderr);
