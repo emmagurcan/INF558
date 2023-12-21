@@ -279,6 +279,7 @@ int CaseSTS(const char *server_host, const int server_port,
     buffer_init(&in, strlen(buf));
     buffer_from_string(&in, (uchar *)buf, strlen(buf));
     buffer_from_base64(&encrypted, &in);
+
     // receive gb = g^b mod p
     packet = network_recv(2);
     parse_packet(NULL, NULL, &tmp, packet);
@@ -328,7 +329,8 @@ int CaseSTS(const char *server_host, const int server_port,
 
     // verify
     concatenate_gb_ga(tmpB, gb, ga, p);
-    mpz_powm_sec(sigmaB, sigmaB, CA->e, CA->N);
+    mpz_powm_sec(sigmaB, sigmaB, CB.e, CB.N);
+    gmp_printf("signature b: %Zd\n", sigmaB);
     
     if (mpz_cmp(tmpB, sigmaB) != 0){
         fprintf(stderr, "Signature of %s is invalid !\n\n", CB.user);
