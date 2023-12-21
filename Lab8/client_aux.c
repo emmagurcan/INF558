@@ -281,7 +281,7 @@ int CaseSTS(const char *server_host, const int server_port,
     buffer_from_base64(&encrypted, &in);
 
     // receive gb = g^b mod p
-    packet = network_recv(2);
+    packet = network_recv(-1);
     parse_packet(NULL, NULL, &tmp, packet);
     printf("Received: %s [%d]\n", tmp, (int)strlen(tmp));
     tmp = tmp + strlen("STS: BOB/ALICE CONNECT2 0x");
@@ -292,11 +292,19 @@ int CaseSTS(const char *server_host, const int server_port,
     gmp_printf("gb=%#Zd\n", gb);
 
     // receive cb
-    packet = network_recv(2);
+    packet = network_recv(-1);
     parse_packet(NULL, NULL, &tmp, packet);
-    msg_import_string(buf, tmp, "STS: ALICE/BOB CONNECT3 ");
+    printf("Received: %s [%d]\n", tmp, (int)strlen(tmp));
+    tmp = tmp + strlen("STS: BOB/ALICE CONNECT3 ");
+    printf("tmp: %s [%d]\n", tmp, (int)strlen(tmp));
+    // char buf2[1024];
+    // msg_import_string(buf2, tmp, "STS: BOB/ALICE CONNECT3 ");
+    // printf("Received: %s [%d]\n", buf2, (int)strlen(buf2));
     init_certificate(&CB);
-    certificate_from_string(&CB, buf);
+    certificate_from_string(&CB, tmp);
+    tmp = tmp - strlen("STS: BOB/ALICE CONNECT3 ");
+    free(tmp);
+    // printf("Certificate string: %s\n", buf2);
 
     // if (!valid_certificate(&CB, N_aut, e_aut)) {
     //     fprintf(stderr, "Certificate of %s is invalid!\n\n", CB.user);
@@ -341,7 +349,6 @@ int CaseSTS(const char *server_host, const int server_port,
     }
 
     // 3.4 generate signature
-    
     SIGNSK(signA, ga, gb, p, NA, dA);
     buffer_from_mpz(&clear, signA);
     aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');

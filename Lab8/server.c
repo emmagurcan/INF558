@@ -251,6 +251,7 @@ int CaseSTS(const char *client_host, const int client_port, char *mesg,
     network_send(client_host, client_port, server_host, server_port, buf);
     tmp = (char*)string_from_certificate(CB);
     msg_export_string(buf, "STS: BOB/ALICE CONNECT2 ", tmp);
+    printf("Sending: %s [%d]\n", buf, (int)strlen(buf));
     free(tmp);
     network_send(client_host, client_port, server_host, server_port, buf);
 
