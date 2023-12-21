@@ -329,9 +329,11 @@ int CaseSTS(const char *server_host, const int server_port,
 
     // verify
     concatenate_gb_ga(tmpB, gb, ga, p);
+    printf("Made it\n");
     mpz_powm_sec(sigmaB, sigmaB, CB.e, CB.N);
     gmp_printf("signature b: %Zd\n", sigmaB);
     
+    printf("Made it\n");
     if (mpz_cmp(tmpB, sigmaB) != 0){
         fprintf(stderr, "Signature of %s is invalid !\n\n", CB.user);
         fflush(stderr);
@@ -339,6 +341,7 @@ int CaseSTS(const char *server_host, const int server_port,
     }
 
     // 3.4 generate signature
+    
     SIGNSK(signA, ga, gb, p, NA, dA);
     buffer_from_mpz(&clear, signA);
     aes_CBC_encrypt(&encrypted, &clear, &key, &IV, 's');
